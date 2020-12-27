@@ -34,7 +34,7 @@ The Embedding layer converts our tweet tensors to vectors, which are fed to a hi
 
 The Dense layer is our "trainable" layer, it computes the proper parameters for the function y = Wx + b. The parameters to "learn" are the weight matrix, W, and a bias vector, b. Each node (in this case 2) takes the outputs from the Mean layer and updates these parameters based on the loss calculated by a cross entropy function.
 
-To properly train our model, the output vectors, y, are passed through a Softmax activation layer. The softmax function turns the vector of real values into a vector of probabilities which sum to 1. Here, we use a LogSoftmax layer, which takes the softmax and then computes the base e log of the probabilities. For this classifier, using log probabilities ensures that the cross entropy loss function will treat incorrect classifications more harshly, which creates a better training environment for the dense layer.
+To properly train our model, we then compute the softmax of the output vector, y. The softmax function turns the vector of real values into a vector of probabilities which sum to 1. Here, we use a LogSoftmax layer, which takes the softmax and then computes the base e log of the probabilities. For this classifier, using log probabilities ensures that the cross entropy loss function will treat incorrect classifications more harshly, which creates a better training environment for the dense layer.
 
 Here are the important bits of the model implementation:
 ```
@@ -59,10 +59,37 @@ model = tl.Serial(
 
 
 
-## Shakesperean N-grams
+## Ngram Generation w/ RNN
 
-TODO
+In this assignment, we used a Recurrent Neural Network to predict the next n characters given a sequence of input tokens. To avoid vanishing or exploding gradients, this RNN has been implemented with a stack of GRU's. 
 
+**Pre-processing**
+
+Similar to the previous assignment, we start by preprocessing text strings and then making the conversion to tensors.
+
+**Model architecture**
+
+![Deep n-gram Architecture](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/ngram_model.png?raw=true)
+
+Here, we use a serial combinator to join ShiftRight, Embedding, stacked GRU, Dense, and LogSoftmax layers.
+
+The first layer in the network is ShiftRight. What this does is shift the tensor to the right by padding the start of the tensor by n positions, in this case we shift one position to the right.
+
+After an embedding layer converts our tensors to vectors, a stack of two GRU's is used to "remember" previous states. The key difference between GRU's and vanilla RNN's is that a GRU addresses the vanishing gradient problem by introducing gated hidden states. The gates, "update" and "reset", allow each step of the network to dispose of or retain specific pieces of information. For example, a GRU has the ability to reset previous state that may not need to be remembered, and update the new state to control how much of the previous state is copied.
+
+After data passes through the stacked GRU's and a Dense output layer, we compute the log softmax of the outputted vectors to identify the word with the highest probability of being next in the sequence.
+
+
+Here are the important bits of the model implementation:
+```
+model = tl.Serial(
+  tl.ShiftRight(mode=mode), # Stack the ShiftRight layer
+  tl.Embedding(vocab_size=vocab_size, d_feature=d_model), # Stack the embedding layer
+  [tl.GRU(n_units=d_model) for i in range(n_layers)], # Stack GRU layers of d_model units
+  tl.Dense(n_units=vocab_size),
+  tl.LogSoftmax()
+)
+```
 
 ## Named Entity Recognition
 
