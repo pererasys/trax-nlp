@@ -1,3 +1,3 @@
-# Natural Language Processing Experiments w/ Trax
+# Natural Language Processing Coursework w/ Trax
 
 TODO
