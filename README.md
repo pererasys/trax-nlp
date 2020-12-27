@@ -3,7 +3,7 @@
 Each of these files is a completed assignment in the deeplearning.ai Natural Language Specialization course hosted on Coursera. They were originally Jupyter notebooks but I've converted them to standard Python, so changes need to be made if they were to be run.
 
 
-### Sentiment Analysis
+## Sentiment Analysis
 
 Earlier in this course I had learned about training sentiment analysis models with Naive Bayes and Logistic Regression. Classification with these models is based on the frequency of certain words in pre-classified text. The issue with this is they incorrectly classify statements like "This movie was almost good.". To solve this, we trained a neural network to learn the intricacies of context and sentiment.
 
@@ -59,21 +59,21 @@ model = tl.Serial(
 
 
 
-### Shakesperean N-grams
+## Shakesperean N-grams
 
 TODO
 
 
-### Named Entity Recognition
+## Named Entity Recognition
 
 TODO
 
 
-### Duplicate Question Classification
+## Duplicate Question Classification
 
 TODO
 
 
-### Language Translation
+## Language Translation
 
 TODO
