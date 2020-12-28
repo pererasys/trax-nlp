@@ -2,6 +2,8 @@
 
 Each of these files is a completed assignment in the deeplearning.ai Natural Language Specialization course hosted on Coursera. They were originally Jupyter notebooks but I've converted them to standard Python, so changes need to be made if they were to be run.
 
+Below are descriptions of the models we created, based on my understanding and in my own words.
+
 
 ## Sentiment Analysis
 
@@ -36,7 +38,7 @@ The Dense layer is our "trainable" layer, it computes the proper parameters for 
 
 To properly train our model, we then compute the softmax of the output vector, y. The softmax function turns the vector of real values into a vector of probabilities which sum to 1. Here, we use a LogSoftmax layer, which takes the softmax and then computes the base e log of the probabilities. For this classifier, using log probabilities ensures that the cross entropy loss function will treat incorrect classifications more harshly, which creates a better training environment for the dense layer.
 
-Here are the important bits of the model implementation:
+
 ```
 embed_layer = tl.Embedding(
     vocab_size=vocab_size,  # Size of the vocabulary
@@ -69,7 +71,7 @@ Similar to the previous assignment, we start by preprocessing text strings and t
 
 **Model architecture**
 
-![Deep n-gram Architecture](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/ngram_model.png?raw=true)
+![Ngram Architecture](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/ngram_sequence_architecture.png?raw=true)
 
 Here, we use a serial combinator to join ShiftRight, Embedding, stacked GRU, Dense, and LogSoftmax layers.
 
@@ -80,7 +82,6 @@ After an embedding layer converts our tensors to vectors, a stack of two GRU's i
 After data passes through the stacked GRU's and a Dense output layer, we compute the log softmax of the outputted vectors to identify the word with the highest probability of being next in the sequence.
 
 
-Here are the important bits of the model implementation:
 ```
 model = tl.Serial(
   tl.ShiftRight(mode=mode), # Stack the ShiftRight layer
@@ -93,7 +94,41 @@ model = tl.Serial(
 
 ## Named Entity Recognition
 
-TODO
+Named entity recognition is the action of extracting entities that can be found within text. To do this, we use a tag mapping for locations, people, organizations, geopolitical entities, and more. For example, the sentence "Many French citizens are going to Morocco for Christmas" contains the geopolitical entity "French", the geographic entity "Morocco", and the time indicator "Christmas". This is a very common NLP task, and in this model we use an LSTM unit to make sense of these entities in the context of a sequence of words.
+
+**Pre-processing**
+
+Pre-processing was mostly completed for us in this assignment. We receive our sample sentences already in tensor form, and are provided with a tag mapping which is a one-hot vector (like) dictionary of tags such as B-geo, B-gpe, B-per, etc..
+
+**Model architecture**
+
+![NER Architecture](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/ner_architecture.png?raw=true)
+
+Following a similar structure to the previous models we created, we start with a serial combinator which consists of Embedding, LSTM, Dense, and LogSoftmax layers.
+
+As in the previous models, the Embedding layer converts our tensors into vectors to be fed into the LSTM unit.
+
+Simply, the LSTM layer in this model receives these embeddings and first decides what existing information it wants to "forget" with a sigmoid layer. To update the cell state, the output of this sigmoid layer is multiplied by the existing state. After deciding what information to throw away, the LSTM unit then decides what new information to pass to the cell state. This is done in two parts. First, a sigmoid "input layer" decides what existing cell state to update, then, a tanh layer creates a vector of new candidates values to add to the existing state. These updates and additions are then concatenated, and added to the cell state.
+
+![LSTM unit](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/lstm_unit.png?raw=true)
+
+The information to output through each pass of this unit is determined by another sigmoid layer, and compressed between -1 and 1 with a tanh layer.
+
+_In the ngram sequence RNN described above, we used a variation of this LSTM unit called a GRU. A GRU is a simplified variation of the unit used in this model, essentially combining the "forget" and "input" gates into a single "update" gate, and merging the cell and hidden state._
+
+The output of the LSTM layer is passed to a Dense output layer with n nodes, where n equals the number of tags in the tag mapping provided.
+
+Similar to the previous models, our tag predictions are based on a final LogSoftmax layer, which gives us the probabilities of a word belonging to each tag class.
+
+
+```
+model = tl.Serial(
+    tl.Embedding(vocab_size = vocab_size, d_feature = d_model), # Embedding layer
+    tl.LSTM(n_units = d_model), # LSTM layer
+    tl.Dense(n_units = len(tags)), # Dense layer with len(tags) units
+    tl.LogSoftmax()  # LogSoftmax layer
+)
+```
 
 
 ## Duplicate Question Classification
