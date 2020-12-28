@@ -7,7 +7,7 @@ Below are descriptions of the models we created, based on my understanding and i
 
 ## Sentiment Analysis
 
-Earlier in this course I had learned about training sentiment analysis models with Naive Bayes and Logistic Regression. Classification with these models is based on the frequency of certain words in pre-classified text. The issue with this is they incorrectly classify statements like "This movie was almost good.". To solve this, we trained a neural network to learn the intricacies of context and sentiment.
+Earlier in this course I had learned about training sentiment analysis models with Naive Bayes and Logistic Regression. Classification with these models is based on the frequency of certain words in pre-classified text. The issue with this is they incorrectly classify statements like "This movie was almost good.". To solve this, we trained a neural network to identify sentiment in a more comprehensive manner.
 
 **Pre-processing**
 
