@@ -108,7 +108,7 @@ Following a similar structure to the previous models we created, we start with a
 
 As in the previous models, the Embedding layer converts our tensors into vectors to be fed into the LSTM unit.
 
-Simply, the LSTM layer in this model receives these embeddings and first decides what existing information it wants to "forget" with a sigmoid layer. To update the cell state, the output of this sigmoid layer is multiplied by the existing state. After deciding what information to throw away, the LSTM unit then decides what new information to pass to the cell state. This is done in two parts. First, a sigmoid "input layer" decides what existing cell state to update, then, a tanh layer creates a vector of new candidates values to add to the existing state. These updates and additions are then concatenated, and added to the cell state.
+The LSTM layer in this model receives these embeddings and first decides what existing information it wants to "forget" with a sigmoid layer. To update the cell state, the output of this sigmoid layer is multiplied by the existing state. After deciding what information to throw away, the LSTM unit then decides what new information to pass to the cell state. This is done in two parts. First, a sigmoid "input layer" decides what existing cell state to update, then, a tanh layer creates a vector of new candidate values to add to the existing state. These updates and additions are then concatenated, and added to the cell state.
 
 ![LSTM unit](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/lstm_unit.png?raw=true)
 
