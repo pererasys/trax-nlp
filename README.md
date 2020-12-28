@@ -60,7 +60,6 @@ model = tl.Serial(
 ```
 
 
-
 ## Ngram Generation w/ RNN
 
 In this assignment, we used a Recurrent Neural Network to predict the next n characters given a sequence of input tokens. To avoid vanishing or exploding gradients, this RNN has been implemented with a stack of GRU's. 
@@ -93,6 +92,7 @@ model = tl.Serial(
   tl.LogSoftmax()
 )
 ```
+
 
 ## Named Entity Recognition
 
@@ -133,10 +133,98 @@ model = tl.Serial(
 ```
 
 
-## Duplicate Question Classification
+## Duplicate Question Identification
 
-TODO
+Popular question-answer forums such as Quora or Stackoverflow will often provide a set of "similar" questions when you go to create a new one. In this assignment, I created a Siamese LSTM network which outputs the similarity between two input questions using cosine similarity.
 
+**Pre-processing**
+
+The training data used in this assignment comes from the Quora question-answer dataset. To prepare the data for training, I used NLTK to create word tokens so that I could create the vocabulary. Similar to the previous assignments, I used this vocabulary to convert questions to tensors for training and prediction.
+
+**Model architecture**
+
+![Siamese Architecture](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/siamese_architecture.png?raw=true)
+
+The architecture for this model is very similar to previous assignments. I first define a Serial combinator which includes Embedding, LSTM, Mean, and Normalization Function layers.
+
+The Embedding layer converts our question tensors to vectors, which get passed to the LSTM layer, identical to the the NER model above. Where things differ is when we add a Mean layer that computes a mean vector from the LSTM output. This is then fed to a normalization function which prepares the network output for cosine similarity analysis.
+
+This serial combination is then run in parallel to process both input questions.
+
+```
+def normalize(x):  # normalizes the vectors to have L2 norm 1
+    return x / fastnp.sqrt(fastnp.sum(x * x, axis=-1, keepdims=True))
+
+# Processor will run on Q1 and Q2
+q_processor = tl.Serial(
+    tl.Embedding(vocab_size=vocab_size, d_feature=d_model), # Embedding layer
+    tl.LSTM(n_units=d_model), # LSTM layer
+    tl.Mean(axis=1), # Mean over columns
+    tl.Fn('Normalize', lambda x: normalize(x))  # Apply normalize function
+)  # Returns one vector of shape [batch_size, d_model].
+
+
+# Run on Q1 and Q2 in parallel.
+model = tl.Parallel(q_processor, q_processor)
+```
+
+One major difference with this model is the loss function we used for training. Where in all previous assignments we were able to take advantage of a standard CrossEntropyLoss function, determining loss when comparing two strings of text is a little bit more tricky.
+
+Traditional triplet loss is a function of the form max(sim(A, N) - sim(A, P) + a, 0), where sim(A, N) is the similarity between an anchor and a negative example,  sim(A, P) is the similarity between an anchor and a positive example, and 'a' is the marginal offset from a loss of 0. The value 'a' allows our model to learn from time steps where the true loss was nominal or non-existent.
+
+Our custom loss function optimizes this traditional implementation by taking the mean of two variations.
+
+**L1 = max(closest_neg - sim(A, P) + a, 0)**\
+**L2 = max(mean_neg - sim(A, P) + a, 0)**\
+**L = mean(L1, L2)**
+
+```
+def TripletLossFn(v1, v2, margin=0.25):
+    """Custom Loss function.
+
+    Args:
+        v1 (numpy.ndarray): Array with dimension (batch_size, model_dimension) associated to Q1.
+        v2 (numpy.ndarray): Array with dimension (batch_size, model_dimension) associated to Q2.
+        margin (float, optional): Desired margin. Defaults to 0.25.
+
+    Returns:
+        jax.interpreters.xla.DeviceArray: Triplet Loss.
+    """
+    
+    # use fastnp to take the dot product of the two batches
+    scores = fastnp.dot(v1, fastnp.transpose(v2))  # pairwise cosine sim
+    
+    # calculate new batch size
+    batch_size = len(scores)
+    
+    # use fastnp to grab all postive `diagonal` entries in `scores`
+    positive = fastnp.diagonal(scores)  # the positive ones (duplicates)
+    
+    # multiply `fastnp.eye(batch_size)` with 2.0 and subtract it out of `scores`
+    negative_without_positive = scores - fastnp.eye(batch_size)
+    
+    # take the row by row `max` of `negative_without_positive`.
+    closest_negative = negative_without_positive.max(axis=[1])
+    
+    # subtract `fastnp.eye(batch_size)` out of 1.0 and do element-wise multiplication with `scores`
+    negative_zero_on_duplicate = (1.0 - fastnp.eye(batch_size)) * scores
+    
+    # use `fastnp.sum` on `negative_zero_on_duplicate` for `axis=1` and divide it by `(batch_size - 1)` 
+    mean_negative = fastnp.sum(negative_zero_on_duplicate, axis=1) / (batch_size - 1)
+    
+    # compute `fastnp.maximum` among 0.0 and `A`
+    # A = subtract `positive` from `margin` and add `closest_negative` 
+    triplet_loss1 = fastnp.maximum((margin - positive + closest_negative), 0.0)
+    
+    # compute `fastnp.maximum` among 0.0 and `B`
+    # B = subtract `positive` from `margin` and add `mean_negative`
+    triplet_loss2 = fastnp.maximum((margin - positive + mean_negative), 0.0)
+    
+    # add the two losses together and take the `fastnp.mean` of it
+    triplet_loss = fastnp.mean(triplet_loss1 + triplet_loss2)
+    
+    return triplet_loss
+```
 
 ## Language Translation
 
