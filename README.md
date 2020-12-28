@@ -226,6 +226,6 @@ def TripletLossFn(v1, v2, margin=0.25):
     return triplet_loss
 ```
 
-## Language Translation
+## Neural Machine Translation
 
 TODO
