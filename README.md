@@ -5,7 +5,7 @@ Each of these files is a completed assignment in the deeplearning.ai Natural Lan
 Below are descriptions of the models we created, based on my understanding and in my own words.
 
 
-## Sentiment Analysis
+## Sentiment Classification
 
 Earlier in this course I had learned about training sentiment analysis models with Naive Bayes and Logistic Regression. Classification with these models is based on the frequency of certain words in pre-classified text. The issue with this is they incorrectly classify statements like "This movie was almost good.". To solve this, we trained a neural network to identify sentiment in a more comprehensive manner.
 
@@ -60,7 +60,7 @@ model = tl.Serial(
 ```
 
 
-## Ngram Generation w/ RNN
+## Ngram Sequences
 
 In this assignment, we used a Recurrent Neural Network to predict the next n characters given a sequence of input tokens. To avoid vanishing or exploding gradients, this RNN has been implemented with a stack of GRU's. 
 
