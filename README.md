@@ -79,6 +79,8 @@ The first layer in the network is ShiftRight. What this does is shift the tensor
 
 After an embedding layer converts our tensors to vectors, a stack of two GRU's is used to "remember" previous states. The key difference between GRU's and vanilla RNN's is that a GRU addresses the vanishing gradient problem by introducing gated hidden states. The gates, "update" and "reset", allow each step of the network to dispose of or retain specific pieces of information. For example, a GRU has the ability to reset previous state that may not need to be remembered, and update the new state to control how much of the previous state is copied.
 
+![GRU Unit](https://github.com/pererasys/trax-nlp/blob/master/docs/resources/gru_unit.png?raw=true)
+
 After data passes through the stacked GRU's and a Dense output layer, we compute the log softmax of the outputted vectors to identify the word with the highest probability of being next in the sequence.
 
 
