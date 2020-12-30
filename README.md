@@ -229,3 +229,18 @@ def TripletLossFn(v1, v2, margin=0.25):
 ## Neural Machine Translation
 
 TODO
+
+
+## Text Summarization
+
+TODO
+
+
+## Question-Answer
+
+TODO
+
+
+## Chatbot
+
+TODO
