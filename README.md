@@ -1,6 +1,8 @@
 # Natural Language Processing Coursework w/ Trax
 
-Each of these files is a completed assignment in the deeplearning.ai Natural Language Specialization course hosted on Coursera. They were originally Jupyter notebooks but I've converted them to standard Python, so changes need to be made if they were to be run.
+Each of these files is a completed assignment in the deeplearning.ai Natural Language Specialization course hosted on Coursera. This specialization consists of four courses, each with four weeks worth of material. Here, I've only included coursework from the last three courses, which are based on the application of deep learning.
+
+I'm a firm believer in the idea that the best time to learn something is when you need to know it, and when you can apply it in a meaningful way. With very little background in ML, and no background in Deep Learning, I was able to complete this specialization in seven days. I look forward to applying what I've learned, and hope to be a part of future innovation in the field.
 
 Below are descriptions of the models we created, based on my understanding and in my own words.
 
